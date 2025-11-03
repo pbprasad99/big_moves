@@ -3,7 +3,7 @@
 Status : Development
 
 A CLI application to analyze big moves ( Linear price movements to the upside) in stocks and correlates them with news events.
-What we want is to observe the reflexi
+What we want is to observe the relationship between financial media narrative and price movements.
 
 
 ## Features
