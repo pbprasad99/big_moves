@@ -31,19 +31,17 @@ from rich.panel import Panel
 
 console = Console()
 
-#console.print("+++++BIG MOVES++++++",justify="center",style="bold blue")
-
 def fetch_stock_data(ticker, period="1y"):
     """Fetch historical stock data for a given ticker and period"""
     try:
         stock = yf.Ticker(ticker)
         data = stock.history(period=period)
         if data.empty:
-            print(f"No data found for ticker {ticker}")
+            console.print(f"[red]No data found for ticker {ticker}[/red]")
             return None
         return data
     except Exception as e:
-        print(f"Error fetching data for {ticker}: {e}")
+        console.print(f"[red]Error fetching data for {ticker}: {e}[/red]")
         return None
 
 def identify_variable_length_linear_moves(data, min_length=10, min_r_squared=0.9, 
@@ -131,22 +129,7 @@ def identify_variable_length_linear_moves(data, min_length=10, min_r_squared=0.9
     
     return moves
 
-# def fetch_finviz_news(ticker):
-#     """Fetch news for a ticker from Finviz"""
-#     try:
-#         stock = finvizfinance(ticker)
-        
-#         # Use ticker_news() instead of TickerNews()
-#         news_df = stock.ticker_news()
-        
-#         if news_df is None or news_df.empty:
-#             print(f"No news found for {ticker}")
-#             return pd.DataFrame(columns=['Date', 'Title', 'Link', 'Source'])
-            
-#         return news_df
-#     except Exception as e:
-#         print(f"Error fetching Finviz news for {ticker}: {e}")
-#         return pd.DataFrame(columns=['Date', 'Title', 'Link', 'Source'])
+
 
 def filter_news_by_date(news_df, start_date, end_date, extra_days_before=10, extra_days_after=7):
     """Filter news by date range with extra days before and after"""
@@ -200,27 +183,41 @@ def summarize_news(news_df, max_headlines=5, max_width=60):
     return "\n\n".join(headlines)
 
 def format_detailed_news(news_df, ticker, start_date, end_date, pct_change, days, r_squared):
-    """Format detailed news items for display"""
+    """Format detailed news items for display using Rich"""
     if news_df.empty:
-        return f"No news found for {ticker} from 10 days before {start_date.strftime('%Y-%m-%d')} to 7 days after {end_date.strftime('%Y-%m-%d')} (Move: {pct_change:.2f}% over {days} days)"
+        return Panel(
+            f"No news found for {ticker} from 10 days before {start_date.strftime('%Y-%m-%d')} to 7 days after {end_date.strftime('%Y-%m-%d')} (Move: {pct_change:.2f}% over {days} days)",
+            title="No News Found",
+            style="yellow"
+        )
     
-    print(f"\n{'='*80}")
-    print(f"DETAILED NEWS FOR {ticker}: 10 DAYS BEFORE {start_date.strftime('%Y-%m-%d')} TO 7 DAYS AFTER {end_date.strftime('%Y-%m-%d')}")
-    print(f"PRICE MOVE: {pct_change:.2f}% over {days} days (R² = {r_squared:.3f})")
-    print(f"{'='*80}")
+    # Create header panel
+    header = f"{ticker} News Summary\n"
+    header += f"Period: 10 days before {start_date.strftime('%Y-%m-%d')} to 7 days after {end_date.strftime('%Y-%m-%d')}\n"
+    header += f"Move: {pct_change:.2f}% over {days} days (R² = {r_squared:.3f})"
     
-    table_data = []
-    for _, row in news_df.iterrows():
-        date = row['Date'].strftime('%Y-%m-%d')
-        title = row['Title']
-        url = row['Link']
-        source = row.get('Source', 'N/A')
-        table_data.append([date, source, title, url])
+    header_panel = Panel(header, style="bold blue")
     
-    # Sort by date
-    table_data.sort(key=lambda x: x[0], reverse=True)
+    # Create news table
+    table = Table(show_header=True, header_style="bold magenta", box=box.ROUNDED, show_lines=True)
+    table.add_column("Date", style="cyan", no_wrap=True)
+    table.add_column("Source", style="green")
+    table.add_column("Title", style="white")
+    table.add_column("URL", style="blue")
     
-    return tabulate(table_data, headers=["Date", "Source", "Title", "URL"], tablefmt="grid")
+    # Sort news by date
+    sorted_news = news_df.sort_values('Date', ascending=False)
+    
+    for _, row in sorted_news.iterrows():
+        table.add_row(
+            row['Date'].strftime('%Y-%m-%d'),
+            row.get('Source', 'N/A'),
+            row['Title'],
+            row['Link']
+        )
+    
+    console.print(header_panel)
+    return table
 
 def main():
     parser = argparse.ArgumentParser(description='Stock Linear Move Detector and News Analyzer')
@@ -245,7 +242,18 @@ def main():
     args = parser.parse_args()
     ticker = args.ticker.upper()
     
-    console.print(f"Analyzing {ticker} for linear upward moves of {args.min_change}% or more...",justify="left",style="bold blue") 
+    # Analysis status panel
+    status = f"🔍 Analyzing {ticker}\n"
+    status += f"📈 Looking for upward moves of {args.min_change}% or more\n"
+    status += f"📅 Over {args.min_length} to {args.max_length} trading days\n"
+    status += f"📊 Minimum R² value: {args.r_squared}"
+    
+    console.print(Panel(
+        status,
+        title="Big Moves",
+        border_style="cyan",
+        padding=(1, 2)
+    ))
     
     # Fetch stock data with longer period
     data = fetch_stock_data(ticker, period=args.period)
@@ -275,11 +283,17 @@ def main():
     plot_volume_chart(data, ticker)              
 
     if not moves:
-        print(f"No significant linear upward moves of {args.min_change}% or more found for {ticker}")
+        console.print(Panel(
+            f"No significant linear upward moves of {args.min_change}% or more found for {ticker}",
+            style="yellow",
+            title="No Moves Found"
+        ))
         return
     
     # Fetch all news for the ticker
-    console.print("Fetching news data...",justify="left",style="bold blue")
+    console.print(Panel("🔎 Fetching relevant news articles...", 
+                       style="blue", 
+                       subtitle="Please wait"))
     all_news = fetch_yahoo_finance_news(ticker)
     
     # First get news for all moves
@@ -315,7 +329,7 @@ def main():
                 'slope': float(move['slope']),
                 'news': news_list
             })
-        print(json.dumps(results, indent=2))
+        console.print_json(data=results)
     else:
         # print(f"\nFound {len(moves)} significant linear upward moves for {ticker}:")
         move_table = []
@@ -357,8 +371,9 @@ def main():
         console.print(table)
         # Display detailed news if requested
         if args.detailed_news:
+            console.print("\n")  # Add some spacing
             for move in moves:
-                print(format_detailed_news(
+                news_table = format_detailed_news(
                     move['news'], 
                     ticker, 
                     move['start_date'], 
@@ -366,7 +381,9 @@ def main():
                     move['pct_change'], 
                     move['length_days'],
                     move['r_squared']
-                ))
+                )
+                console.print(news_table)
+                console.print("\n")  # Add spacing between moves
         # 4. Add rows to the table
 
 
