@@ -28,14 +28,13 @@ uv pip install -r requirements.txt
 ## Usage
 
 ```bash
-./big_moves.py TICKER [--threshold PERCENT] [--window DAYS] [--output {console,json}]
+./big_moves.py TICKER [--threshold PERCENT] [--window DAYS] 
 ```
 
 Arguments:
 - `TICKER`: Stock symbol (e.g., AAPL, MSFT, GOOGL)
 - `--threshold`: Percentage threshold for significant moves (default: 30.0)
 - `--window`: Time window in days to calculate moves (default: 30)
-- `--output`: Output format, either 'console' or 'json' (default: console)
 
 ## Example
 
