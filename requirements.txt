@@ -1,5 +1,7 @@
 pandas
 yfinance
 numpy
-tabulate
-finvizfinance
+scikit-learn
+#textual
+rich
+plotext

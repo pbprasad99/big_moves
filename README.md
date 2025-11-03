@@ -1,12 +1,15 @@
 # Big Moves - Stock Price Movement Analyzer
 
-A Python tool that analyzes significant price movements in stocks and correlates them with news events.
+Status : Development
+
+A CLI application to analyze big moves ( Linear price movements to the upside) in stocks and correlates them with news events.
+What we want is to observe the reflexi
+
 
 ## Features
 
 - Identifies sustained upward price movements over a specified time window
 - Fetches relevant news articles around the dates of significant moves
-- Supports both console and JSON output formats
 - Configurable threshold for what constitutes a "significant" move
 - Customizable time window for analysis
 
