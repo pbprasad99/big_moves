@@ -1,6 +1,14 @@
 # Virtual environment
 .venv/
 venv/
+env/
+ENV/
+.env/
+.python-version
+
+# Package manager
+.uv/
+.pip/
 
 #Ai generated trash
 .trash/
@@ -23,15 +31,31 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
+.coverage
+htmlcov/
+.pytest_cache/
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+.mypy_cache/
+.pyre/
+.ruff_cache/
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+*.sublime-workspace
+*.sublime-project
 
 # Project-specific
 *.log
+seen_filings.json
+.DS_Store

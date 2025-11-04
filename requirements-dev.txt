@@ -1,0 +1,4 @@
+-r requirements.txt
+setuptools>=69.0.2
+wheel>=0.41.3
+build>=1.0.3
