@@ -17,14 +17,13 @@ A CLI application to trace the relationship between financial media narrative an
 
 ## Quick Start
 
+
 ```bash
 # Setup your environment (see SETUP.md for detailed instructions)
 uv venv
 source .venv/bin/activate
 uv pip install -r requirements_dev.txt
-
-# Run the analyzer
-./big_moves.py AAPL  # Analyze Apple stock
+uv pip install -e . 
 ```
 
 ## Usage

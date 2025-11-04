@@ -27,14 +27,18 @@ source .venv/bin/activate  # On Unix/macOS
 
 3. Install dependencies using uv:
 ```bash
-uv pip install -r requirements.txt
+uv pip install -r requirements_dev.txt
 ```
 
+4. Install cli
+```
+uv pip install -e . 
+```
 ## Updating Dependencies
 
 To update dependencies to their latest compatible versions:
 ```bash
-uv pip install --upgrade -r requirements.txt
+uv pip install --upgrade -r requirements_dev.txt
 ```
 
 ## Deactivating the Environment
