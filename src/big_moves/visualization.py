@@ -7,11 +7,13 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
-console = Console()
+W, H = plt.terminal_size()
+
+plt.plotsize(W*0.6, H*0.3)
 
 def plot_candlestick_chart(data, ticker):
     """Plot candlestick chart using plotext."""
-    plt.clf()
+    plt.clear_data()
     
     # Get OHLC data
     dates = data.index.strftime('%Y-%m-%d').tolist()
@@ -30,7 +32,7 @@ def plot_candlestick_chart(data, ticker):
 
 def plot_volume_chart(data, ticker):
     """Plot volume chart using plotext."""
-    plt.clf()
+    plt.clear_data()
     
     # Get volume data
     dates = data.index.strftime('%Y-%m-%d').tolist()

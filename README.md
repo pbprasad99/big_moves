@@ -1,8 +1,12 @@
-# Big Moves - Stock Price Movement Analyzer
+# Big Moves
 
 ![Status: Active Development](https://img.shields.io/badge/Status-Active%20Development-brightgreen)
 
-A CLI application to trace the relationship between financial media narrative and price movements of stocks.
+
+![Big Moves](images/bigmoves.png)
+
+A CLI application to trace the relationship between financial media narrative and price movements of stocks. Uses linear regression to identify big moves.
+
 
 ## Features
 
@@ -17,7 +21,7 @@ A CLI application to trace the relationship between financial media narrative an
 # Setup your environment (see SETUP.md for detailed instructions)
 uv venv
 source .venv/bin/activate
-uv pip install -r requirements.txt
+uv pip install -r requirements_dev.txt
 
 # Run the analyzer
 ./big_moves.py AAPL  # Analyze Apple stock
@@ -26,13 +30,18 @@ uv pip install -r requirements.txt
 ## Usage
 
 ```bash
-./big_moves.py TICKER [--threshold PERCENT] [--window DAYS] 
+big-moves TICKER 
+```
+Options :
+
 ```
 
-Arguments:
-- `TICKER`: Stock symbol (e.g., AAPL, MSFT, GOOGL)
-- `--threshold`: Percentage threshold for significant moves (default: 30.0)
-- `--window`: Time window in days to calculate moves (default: 30)
+```
+
+```
+big-moves ASTS --min_length 10 --max_length 252 --min_change 30.0 --r_squared 0.9 --min_slope 0.1 --period 1y --detailed_news 
+```
+
 
 ## Example
 

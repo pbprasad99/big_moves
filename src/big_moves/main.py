@@ -35,7 +35,7 @@ def main():
     args = parse_args()
     
     # Display header
-    cli.display_header()
+    # cli.display_header()
     
     # Analysis status panel
     status = f"🔍 Analyzing {args.symbol}\n"

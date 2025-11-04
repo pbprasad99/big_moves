@@ -16,7 +16,7 @@ setup(
             "big-moves=big_moves.main:main",
         ],
     },
-    author="Your Name",
+    author="https://github.com/pbprasad99",
     description="A tool for detecting significant linear price movements in stocks",
     keywords="stock, finance, analysis, cli",
     python_requires=">=3.7",
