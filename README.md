@@ -1,11 +1,8 @@
 # Big Moves - Stock Price Movement Analyzer
 
-# Big Moves - Stock Price Movement Analyzer
-
 ![Status: Active Development](https://img.shields.io/badge/Status-Active%20Development-brightgreen)
 
-A CLI application to analyze big moves (Linear price movements to the upside) in stocks and correlates them with news events.
-What we want is to observe the relationship between financial media narrative and price movements.
+A CLI application to trace the relationship between financial media narrative and price movements of stocks.
 
 ## Features
 
