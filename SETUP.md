@@ -30,24 +30,6 @@ source .venv/bin/activate  # On Unix/macOS
 uv pip install -r requirements.txt
 ```
 
-## Usage
-
-After setting up the environment, you can run the script:
-
-```bash
-python big_moves.py AAPL  # Replace AAPL with any stock ticker
-```
-
-Additional options:
-- `--threshold`: Percentage threshold for significant moves (default: 30.0)
-- `--window`: Time window in days to calculate moves (default: 30)
-- `--output`: Output format, either 'console' or 'json' (default: console)
-
-Example with options:
-```bash
-python big_moves.py TSLA --threshold 25 --window 14 --output json
-```
-
 ## Updating Dependencies
 
 To update dependencies to their latest compatible versions:

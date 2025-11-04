@@ -32,23 +32,8 @@ uv pip install -r requirements_dev.txt
 ```bash
 big-moves TICKER 
 ```
-Options :
 
-```
-
-```
-
-```
+```bash
 big-moves ASTS --min_length 10 --max_length 252 --min_change 30.0 --r_squared 0.9 --min_slope 0.1 --period 1y --detailed_news 
 ```
 
-
-## Example
-
-```bash
-./big_moves.py TSLA --threshold 25 --window 14 --output json
-```
-
-## Setup
-
-See [SETUP.md](SETUP.md) for detailed installation and setup instructions.
