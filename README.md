@@ -29,12 +29,12 @@ uv pip install -e .
 ## Usage
 
 ```bash
-big-moves <TICKER? 
+big-moves <TICKER> [OPTIONS]
 ```
 
 Example :  
 
 ```bash
-big-moves ASTS --min_length 10 --max_length 252 --min_change 30.0 --r_squared 0.9 --min_slope 0.1 --period 1y --detailed_news 
+ big-moves DOCN --max_segments 6 --min_points 6 --detailed_news --big_move_threshold 30.0  
 ```
 
