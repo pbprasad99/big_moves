@@ -5,14 +5,14 @@
 
 ![Big Moves](images/bigmoves.png)
 
-A CLI application to trace the relationship between financial media narrative and price movements of stocks. Uses linear regression to identify big moves.
+A CLI application to trace the relationship between financial media narrative and price movements of stocks. Uses segmented linear regression to identify and highlight big moves and summarizes the news flow progressing through segments.
 
 
 ## Features
 
-- Identifies sustained upward price movements over a specified time window
-- Fetches relevant news articles around the dates of significant moves
-- Configurable threshold for what constitutes a "significant" move
+- Divides chart into segments using segmented linear regression and highlights big moves.
+- Summarizes news narrative as we progress trough the segments.
+- Configurable percentage threshold for what constitutes a big move
 - Customizable time window for analysis
 
 ## Quick Start
