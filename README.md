@@ -8,6 +8,11 @@
 A CLI application to trace the relationship between financial media narrative and price movements of stocks. Uses segmented linear regression to identify and highlight big moves and summarizes the news flow progressing through segments.
 
 
+**Use this to :** 
+
+1. To observe the reflexive interplay between price and narrative
+2. To quickly understand the story behind a stock. 
+
 ## Features
 
 - Divides chart into segments using segmented linear regression and highlights big moves.
