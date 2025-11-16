@@ -4,80 +4,102 @@ Main entry point for the Big Moves application.
 import sys
 import argparse
 from . import data, analysis, visualization, cli
+from .segmented_regression import SegmentedRegression
 from rich.panel import Panel
 from rich.table import Table
 from rich import box
+import numpy as np
 
 def parse_args():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Stock Linear Move Detector and News Analyzer")
+    parser = argparse.ArgumentParser(description="Stock Move Detector and News Analyzer")
     parser.add_argument("symbol", type=str, help="Stock ticker symbol")
-    parser.add_argument("--min_length", type=int, default=10,
-                        help="Minimum trend length in trading days (default: 10)")
-    parser.add_argument("--max_length", type=int, default=252,
-                        help="Maximum trend length in trading days (default: 252, ~1 year)")
-    parser.add_argument("--min_change", type=float, default=30.0,
-                        help="Minimum percentage change required (default: 30.0)")
-    parser.add_argument("--r_squared", type=float, default=0.9,
-                        help="Minimum R-squared value for linear fit (default: 0.9)")
-    parser.add_argument("--min_slope", type=float, default=0.1,
-                        help="Minimum daily slope as percentage of price (default: 0.1)")
     parser.add_argument("--period", type=str, default="1y",
                         help="Lookback period for data (default: 1y)")
-    parser.add_argument("--output", type=str, choices=["console"], default="console",
-                        help="Output format (default: console)")
+    parser.add_argument("--max_segments", type=int, default=6,
+                        help="Maximum number of segments to search for (default: 6)")
+    parser.add_argument("--min_points", type=int, default=3,
+                        help="Minimum points per segment for segmented regression (default: 3)")
+    # parser.add_argument("--output", type=str, choices=["console"], default="console",
+    #                     help="Output format (default: console)")
     parser.add_argument("--detailed_news", action="store_true",
                         help="Show detailed news for each move")
+    parser.add_argument("--big_move_threshold",type=float,default=20.0,
+                        help="Moves exceeding this percent change will be highlighted")
     return parser.parse_args()
 
 def main():
     """Main entry point."""
     args = parse_args()
-    
     # Display header
-    # cli.display_header()
-    
-    # Analysis status panel
-    status = f"🔍 Analyzing {args.symbol}\n"
-    status += f"📈 Looking for upward moves of {args.min_change}% or more\n"
-    status += f"📅 Over {args.min_length} to {args.max_length} trading days\n"
-    status += f"📊 Minimum R² value: {args.r_squared}"
-    
-    cli.console.print(Panel(status, title="Big Moves", border_style="cyan", padding=(1, 2)))
+    cli.display_header()
     
     # Fetch data
     dates, prices, stock_data = data.fetch_stock_data(args.symbol, args.period)
     if not prices:
         return 1
         
-    # Plot charts
-    visualization.plot_candlestick_chart(stock_data, args.symbol)
+    # Use segmented regression to identify piecewise linear segments
+    x = np.arange(len(stock_data))
+    y = stock_data['Close'].values
+    seg_model = SegmentedRegression(max_segments=args.max_segments, min_points_per_segment=args.min_points)
+    seg_model.fit(x, y)
+
+    # Overlay the fitted segments on the candlestick chart
+    visualization.plot_candlestick_with_segments(stock_data, args.symbol, seg_model.models)
+
+    # Also show volume chart below
     visualization.plot_volume_chart(stock_data, args.symbol)
-    
-    # Analyze movement
-    moves = analysis.identify_linear_moves(
-        stock_data,
-        min_length=args.min_length,
-        max_length=args.max_length,
-        min_r_squared=args.r_squared,
-        min_slope=args.min_slope,
-        min_pct_change=args.min_change
-    )
-    
+
+    # Build segments list in the same format as previous 'moves' for downstream processing
+    moves = []
+    for model in seg_model.models:
+        start = int(model['start_idx'])
+        end = int(model['end_idx'])
+        start_date = stock_data.index[start]
+        end_date = stock_data.index[end]
+        start_price = float(stock_data['Close'].iloc[start])
+        end_price = float(stock_data['Close'].iloc[end])
+        pct_change = ((end_price - start_price) / start_price) * 100 if start_price != 0 else 0.0
+        length_days = end - start + 1
+        pct_per_day = (pct_change / length_days) if length_days > 0 else 0.0
+        volume = float(stock_data['Volume'].iloc[start:end+1].mean()) if 'Volume' in stock_data.columns else 0.0
+        slope = float(model['slope'])
+        # Compute R-squared for the segment
+        y_seg = y[start:end+1]
+        x_seg = x[start:end+1]
+        y_pred = slope * x_seg + model['intercept']
+        ss_res = float(((y_seg - y_pred) ** 2).sum())
+        ss_tot = float(((y_seg - y_seg.mean()) ** 2).sum())
+        r_squared = 1.0 - ss_res / ss_tot if ss_tot > 0 else 0.0
+        
+        moves.append({
+            'start_date': start_date,
+            'end_date': end_date,
+            'length_days': length_days,
+            'start_price': start_price,
+            'end_price': end_price,
+            'pct_change': pct_change,
+            'pct_per_day': pct_per_day,
+            'volume': volume,
+            'r_squared': r_squared,
+            'slope': slope,
+            'rss': float(model.get('rss', ss_res))
+        })
+
     if not moves:
         cli.console.print(Panel(
-            f"No significant linear upward moves of {args.min_change}% or more found for {args.symbol}",
+            f"No segments identified for {args.symbol}",
             style="yellow",
-            title="No Moves Found"
+            title="No Segments Found"
         ))
         return 0
         
     # Fetch news for moves
     from . import news
-    cli.console.print(Panel("🔎 Fetching relevant news articles...", style="blue", subtitle="Please wait"))
     all_news = news.fetch_yahoo_finance_news(args.symbol)
     
-    # Process each move
+    # Process each segment and attach news
     for i, move in enumerate(moves):
         filtered_news = news.filter_news_by_date(
             all_news,
@@ -89,11 +111,32 @@ def main():
     
     # Display results
     table = Table(show_header=True, header_style="bold magenta", box=box.SQUARE, show_lines=True)
-    headers = ["#", "Start Date", "End Date", "Days", "Start", "End", "% Change", "R²", "Slope", "Key News"]
+    headers = ["#", "Start Date", "End Date", "Days", "Start", "End", "% Change", "R²", "Slope (raw)", "%/day", "Key News"]
     for header in headers:
         table.add_column(header, justify="center", style="green")
-    
+
+    # Highlight threshold (percent)
+    # HIGHLIGHT_THRESHOLD = args.big_move_threshold
+
     for i, move in enumerate(moves, 1):
+        abs_pct = abs(move['pct_change'])
+        # If the move exceeds the highlight threshold, use a strong background style
+        if abs_pct >= args.big_move_threshold:
+            if move['pct_change'] > 0:
+                row_style = "bold black on chartreuse3"
+            elif move['pct_change'] < 0:
+                row_style = "bold black on orange3"
+            else:
+                row_style = "bold black on white"
+        else:
+            # regular directional coloring
+            if move['pct_change'] > 0:
+                row_style = "bold black on honeydew2"
+            elif move['pct_change'] < 0:
+                row_style = "bold black on light_salmon1"
+            else:
+                row_style = "bold black on white"
+
         table.add_row(
             str(i),
             move['start_date'].strftime('%Y-%m-%d'),
@@ -103,12 +146,14 @@ def main():
             f"${move['end_price']:.2f}",
             f"{move['pct_change']:.2f}%",
             f"{move['r_squared']:.3f}",
-            f"{move['slope']:.2f}%/day",
-            move['news_summary']
+            f"{move['slope']:.6f}",
+            f"{move['pct_per_day']:.2f}%/day",
+            move['news_summary'],
+            style=row_style
         )
-    
+
     cli.console.print(table)
-    
+
     # Display detailed news if requested
     if args.detailed_news:
         cli.console.print("\n")
@@ -120,9 +165,10 @@ def main():
                 move['end_date'],
                 move['pct_change'],
                 move['length_days'],
-                move['r_squared']
+                move['r_squared'],
+                highlight_threshold=args.big_move_threshold
             )
-    
+
     return 0
 
 if __name__ == "__main__":

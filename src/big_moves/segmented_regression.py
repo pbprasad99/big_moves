@@ -19,7 +19,7 @@ class SegmentedRegression:
     Performs segmented regression with automatic breakpoint estimation.
     """
     
-    def __init__(self, max_segments=5):
+    def __init__(self, max_segments=5, min_points_per_segment=3):
         """
         Initialize the segmented regression model.
         
@@ -27,8 +27,11 @@ class SegmentedRegression:
         -----------
         max_segments : int
             Maximum number of segments to consider
+        min_points_per_segment : int
+            Minimum number of points required per segment
         """
         self.max_segments = max_segments
+        self.min_points_per_segment = int(max(2, min_points_per_segment))
         self.breakpoints = None
         self.models = None
         self.optimal_segments = None
@@ -111,7 +114,7 @@ class SegmentedRegression:
         tuple : (breakpoints, total_rss)
         """
         n = len(x)
-        min_points_per_segment = 3  # Minimum points needed per segment
+        min_points_per_segment = self.min_points_per_segment  # Minimum points needed per segment
         
         if n_segments == 1:
             model = self.fit_single_segment(x, y, 0, n-1)

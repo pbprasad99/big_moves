@@ -9,7 +9,7 @@ def fetch_yahoo_finance_news(ticker):
     """Fetch news for a ticker from Yahoo Finance."""
     try:
         stock = yf.Ticker(ticker)
-        news_data = stock.get_news(count=1000)
+        news_data = stock.get_news(count=2000)
         
         if not news_data:
             print(f"No news found for {ticker} on Yahoo Finance")
