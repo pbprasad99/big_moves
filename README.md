@@ -3,9 +3,9 @@
 ![Status: Active Development](https://img.shields.io/badge/Status-Active%20Development-brightgreen)
 
 
-![Big Moves](images/bigmoves_2.png)
+![Big Moves](images/big_moves_2.png)
 
-![Big Moves](images/bigmoves_3.png)
+![Big Moves](images/big_moves_3.png)
 
 A CLI application to trace the relationship between financial media narrative and price movements of stocks. Uses segmented linear regression to identify and highlight big moves and summarizes the news flow progressing through segments.
 
