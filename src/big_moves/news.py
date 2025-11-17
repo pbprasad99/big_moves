@@ -76,14 +76,14 @@ def filter_news_by_date(news_df, start_date, end_date, extra_days_before=10, ext
     start_date = pd.Timestamp(start_date).tz_localize(None)
     end_date = pd.Timestamp(end_date).tz_localize(None)
     
-    extended_start = start_date - pd.Timedelta(days=extra_days_before)
-    extended_end = end_date + pd.Timedelta(days=extra_days_after)
+    # extended_start = start_date - pd.Timedelta(days=extra_days_before)
+    # extended_end = end_date + pd.Timedelta(days=extra_days_after)
     
     news_df['Date'] = news_df['Date'].dt.tz_localize(None)
     
     filtered_news = news_df[
-        (news_df['Date'] >= extended_start) & 
-        (news_df['Date'] <= extended_end)
+        (news_df['Date'] >= start_date) & 
+        (news_df['Date'] <= end_date)
     ]
     
     return filtered_news

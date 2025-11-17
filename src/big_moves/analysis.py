@@ -1,4 +1,6 @@
 """
+!Deprecated. Now, using src/big_moves/segmented_regression.py
+
 Data analysis and filtering functions for detecting significant stock moves.
 """
 import numpy as np

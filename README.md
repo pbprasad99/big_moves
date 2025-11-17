@@ -3,7 +3,9 @@
 ![Status: Active Development](https://img.shields.io/badge/Status-Active%20Development-brightgreen)
 
 
-![Big Moves](images/bigmoves.png)
+![Big Moves](images/bigmoves_2.png)
+
+![Big Moves](images/bigmoves_3.png)
 
 A CLI application to trace the relationship between financial media narrative and price movements of stocks. Uses segmented linear regression to identify and highlight big moves and summarizes the news flow progressing through segments.
 
@@ -33,13 +35,25 @@ uv pip install -e .
 
 ## Usage
 
+Grab an api key from groq.
+
+
+Update at least `GROQ_API_KEY` using 
+
 ```bash
-big-moves <TICKER> [OPTIONS]
+big-moves config set --all
+
 ```
 
-Example :  
+Analyze US listed stocks: 
+
 
 ```bash
- big-moves DOCN --max_segments 6 --min_points 6 --detailed_news --big_move_threshold 30.0  
+big-moves run <TICKER> [OPTIONS]
+```
+
+
+```bash
+ big-moves run ONDS --max_segments 6 --min_points 6 --detailed_news --big_move_threshold 30.0  
 ```
 

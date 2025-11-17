@@ -11,8 +11,8 @@ console = Console()
 
 def display_header():
     """Display the application header."""
-    title = Text("📈 Big Moves - Stock Linear Move Detector", style="bold cyan")
-    subtitle = Text("\nDetecting significant linear price movements in stocks", style="italic")
+    title = Text("📈 Big Moves", style="bold cyan")
+    subtitle = Text("\nAnalyze significant price movements in stocks", style="italic")
     panel = Panel(title + subtitle, border_style="cyan")
     console.print(panel)
 
@@ -38,8 +38,8 @@ def display_detailed_news(news_df, ticker, start_date, end_date, pct_change, day
     """
     if news_df.empty:
         return console.print(Panel(
-            f"No news found for {ticker} from 10 days before {start_date.strftime('%Y-%m-%d')} "
-            f"to 7 days after {end_date.strftime('%Y-%m-%d')} "
+            f"No news found for {ticker} between {start_date.strftime('%Y-%m-%d')} "
+            f"and {end_date.strftime('%Y-%m-%d')} "
             f"(Move: {pct_change:.2f}% over {days} days)",
             title="No News Found",
             style="yellow"
@@ -65,7 +65,7 @@ def display_detailed_news(news_df, ticker, start_date, end_date, pct_change, day
 
     # Create header panel
     header = f"{ticker} News Summary\n"
-    header += f"Period: 10 days before {start_date.strftime('%Y-%m-%d')} to 7 days after {end_date.strftime('%Y-%m-%d')}\n"
+    header += f"Period: Between {start_date.strftime('%Y-%m-%d')} and {end_date.strftime('%Y-%m-%d')}\n"
     header += f"Move: {pct_change:.2f}% over {days} days (R² = {r_squared:.3f})"
 
     console.print(Panel(header, style="bold blue"))
