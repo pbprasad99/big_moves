@@ -76,7 +76,7 @@ STATIC_MODEL_HINTS = {
     "meta-llama/llama-prompt-guard-2-86m": {"context": 512, "max_completion": 512},
 }
 DEFAULT_CONTEXT = 8000
-DEFAULT_COMPLETION_BUDGET = 400  # tokens reserved for model reply
+DEFAULT_COMPLETION_BUDGET = 400  # tokens reserved for model reply (small summaries)
 HEADER_OVERHEAD = 80  # rough tokens for prompt scaffolding
 
 
@@ -147,9 +147,11 @@ def _estimate_tokens(text: str) -> int:
 
 def _build_prompt_from_df(
     news_df: pd.DataFrame,
-    max_items: int = MAX_ITEMS_PER_CHUNK,
-    max_chars: int = MAX_PROMPT_CHARS,
+    max_items: int | None = MAX_ITEMS_PER_CHUNK,
+    max_chars: int | None = MAX_PROMPT_CHARS,
 ) -> str:
+    # Build the chunk prompt with optional caps; when max_items/max_chars are None,
+    # adaptive budgeting upstream controls truncation instead of legacy fixed limits.
     parts = []
     if news_df is None or news_df.empty:
         return ""
@@ -167,13 +169,13 @@ def _build_prompt_from_df(
             seg += f" : {snippet}"
         parts.append(seg)
 
-    if len(parts) > max_items:
+    if max_items is not None and len(parts) > max_items:
         keep_each_side = max_items // 2
         parts = parts[:keep_each_side] + ["... (truncated) ..."] + parts[-keep_each_side:]
 
     joined = '\n'.join(parts)
 
-    if len(joined) > max_chars:
+    if max_chars is not None and len(joined) > max_chars:
         joined = joined[:max_chars]
         if '\n' in joined:
             joined = joined.rsplit('\n', 1)[0]
@@ -223,8 +225,8 @@ def _call_groq(prompt: str, max_tokens: int = 1000) -> str:
 
     return chat_completion.choices[0].message.content
 
-def _summarize_chunk(news_df: pd.DataFrame, max_tokens: int) -> str:
-    prompt = _build_prompt_from_df(news_df)
+def _summarize_chunk(news_df: pd.DataFrame, max_tokens: int, *, max_items: int | None = None, max_chars: int | None = None) -> str:
+    prompt = _build_prompt_from_df(news_df, max_items=max_items, max_chars=max_chars)
     if not prompt:
         return ""
     return _call_groq(prompt, max_tokens=max_tokens).strip()
@@ -269,6 +271,8 @@ def summarize_news_df(news_df: pd.DataFrame, max_tokens: int = 150) -> str:
         start_idx = 0
         tokens_used = 0
         token_budget = prompt_budget_map - HEADER_OVERHEAD
+        # derive per-chunk prompt char cap from map budget (approx 4 chars per token)
+        chunk_max_chars = int(token_budget * 4)
 
         for idx, (_, row) in enumerate(news_df.iterrows()):
             date = row.get('Date')
@@ -293,7 +297,12 @@ def summarize_news_df(news_df: pd.DataFrame, max_tokens: int = 150) -> str:
                     len(news_df),
                     tokens_used,
                 )
-                chunk_summary = _summarize_chunk(chunk, max_tokens=max_tokens)
+                chunk_summary = _summarize_chunk(
+                    chunk,
+                    max_tokens=max_tokens,
+                    max_items=None,  # rely on budget, not fixed count
+                    max_chars=chunk_max_chars,
+                )
                 if chunk_summary:
                     chunk_summaries.append(chunk_summary)
                 start_idx = idx
@@ -312,7 +321,12 @@ def summarize_news_df(news_df: pd.DataFrame, max_tokens: int = 150) -> str:
                 len(news_df),
                 tokens_used,
             )
-            chunk_summary = _summarize_chunk(chunk, max_tokens=max_tokens)
+            chunk_summary = _summarize_chunk(
+                chunk,
+                max_tokens=max_tokens,
+                max_items=None,
+                max_chars=chunk_max_chars,
+            )
             if chunk_summary:
                 chunk_summaries.append(chunk_summary)
 
