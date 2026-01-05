@@ -27,3 +27,9 @@
 ## Notes
 - Use `.env` to set config (e.g., `GROQ_API_KEY`, `BIG_MOVES_DEBUG_PROMPTS`).
 - Keep `main` stable; branch for new work.
+
+## Next Steps Toward First Release
+- UX hardening: add retries/fallbacks for Groq/API failures; validate config; clearer error messages and progress cues.
+- Docs: richer README (getting started, sample run/output, troubleshooting common errors, how to set models/keys/debug flags).
+- Testing: add basic smoke/regression tests for segmentation, news fetch/filter, and summarizer to catch regressions.
+- Packaging: define versioning/release flow; move changelog entries from Unreleased into tagged releases when ready.
