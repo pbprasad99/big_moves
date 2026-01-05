@@ -241,7 +241,13 @@ def summarize_news_df(news_df: pd.DataFrame, max_tokens: int = 150) -> str:
         model = os.getenv('GROQ_MODEL', 'groq/compound-mini')
         hints = _select_hints_for_model(model)
         context_window = hints.get("context", DEFAULT_CONTEXT)
-        completion_budget = hints.get("max_completion") or DEFAULT_COMPLETION_BUDGET
+        hinted_max_completion = hints.get("max_completion") or DEFAULT_COMPLETION_BUDGET
+        # Reserve at least 10% of the context for completion, capped at 2048 tokens and the hinted max.
+        completion_budget = min(
+            hinted_max_completion,
+            2048,
+            max(int(context_window * 0.10), DEFAULT_COMPLETION_BUDGET),
+        )
         prompt_budget_map = max(int((context_window - completion_budget) * 0.65), 800)
         prompt_budget_reduce = max(int((context_window - completion_budget) * 0.75), 1000)
         if DEBUG_PROMPTS:
