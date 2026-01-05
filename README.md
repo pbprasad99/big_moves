@@ -45,6 +45,14 @@ big-moves config set --all
 
 ```
 
+Optional debug logging for summarizer prompts:
+
+```bash
+# In your .env (project cwd or global config):
+BIG_MOVES_DEBUG_PROMPTS=true
+```
+When enabled, the app logs model hint selection, budgets, and prompts (stdout). Leave unset/false for normal runs.
+
 Analyze US listed stocks: 
 
 
@@ -56,4 +64,3 @@ big-moves run <TICKER> [OPTIONS]
 ```bash
  big-moves run ONDS --max_segments 6 --min_points 6 --detailed_news --big_move_threshold 30.0  
 ```
-
